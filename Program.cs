@@ -1,396 +1,428 @@
-using System.Globalization;
-using System.Text;
+namespace Basics {
+    internal class Program {
+        static void Main(string[] args) {
+            bool programIsRunning = true;
 
-Console.InputEncoding = Encoding.UTF8;
-Console.OutputEncoding = Encoding.UTF8;
+            while (programIsRunning) {
+                Console.WriteLine();
+                Console.WriteLine("========================================");
+                Console.WriteLine("              ФІТ-2-15");
+                Console.WriteLine("      Лабораторна робота №3");
+                Console.WriteLine("========================================");
+                Console.WriteLine("1 — Змінити порядок цифр числа");
+                Console.WriteLine("2 — Видалити перші X слів");
+                Console.WriteLine("3 — Обчислити площу фігури");
+                Console.WriteLine("4 — Замінити кожен 3-й та 5-й символ");
+                Console.WriteLine("0 — Вийти");
+                Console.Write("Оберіть завдання: ");
 
-try
-{
-    while (true)
-    {
-        Console.WriteLine();
-        Console.WriteLine("========================================");
-        Console.WriteLine("              ФІТ-2-15");
-        Console.WriteLine("      Лабораторна робота №3");
-        Console.WriteLine("========================================");
-        Console.WriteLine("1 — Змінити порядок цифр числа");
-        Console.WriteLine("2 — Видалити перші X слів");
-        Console.WriteLine("3 — Обчислити площу фігури");
-        Console.WriteLine("4 — Замінити кожен 3-й та 5-й символ");
-        Console.WriteLine("0 — Вийти");
-        Console.Write("Оберіть завдання: ");
+                string choice = Console.ReadLine() ?? "";
 
-        string? choice = Console.ReadLine();
-        if (choice is null or "0")
-            break;
+                switch (choice) {
+                    case "1": {
+                            ReverseNumber();
+                            break;
+                        }
 
-        try
-        {
-            switch (choice)
-            {
-                case "1":
-                    ReverseNumber();
-                    break;
-                case "2":
-                    RemoveWords();
-                    break;
-                case "3":
-                    CalculateArea();
-                    break;
-                case "4":
-                    ReplaceCharacters();
-                    break;
-                default:
-                    Console.WriteLine("Оберіть число від 0 до 4.");
-                    break;
+                    case "2": {
+                            RemoveWordsOrDigits();
+                            break;
+                        }
+
+                    case "3": {
+                            CalculateArea();
+                            break;
+                        }
+
+                    case "4": {
+                            ReplaceCharacters();
+                            break;
+                        }
+
+                    case "0": {
+                            programIsRunning = false;
+                            break;
+                        }
+
+                    default: {
+                            Console.WriteLine("Помилка: оберіть число від 0 до 4.");
+                            break;
+                        }
+                }
             }
         }
-        catch (OverflowException)
-        {
-            Console.WriteLine("Значення завелике для обчислення.");
-        }
-    }
-}
-catch (EndOfStreamException)
-{
-    // Коректне завершення програми, якщо потік введення закрито.
-}
 
-static string ReadText(string prompt)
-{
-    Console.Write(prompt);
-    return Console.ReadLine() ?? throw new EndOfStreamException();
-}
 
-static void ReverseNumber()
-{
-    while (true)
-    {
-        string input = ReadText("Введіть ціле число будь-якої довжини: ").Trim();
+        #region TASK 1
 
-        if (!TryReadIntegerText(input, out char sign, out string digits))
-        {
-            Console.WriteLine("Помилка: введіть ціле число без пробілів та інших символів.");
-            continue;
-        }
+        static void ReverseNumber() {
+            Console.Write("Введіть ціле число будь-якої довжини: ");
+            string input = (Console.ReadLine() ?? "").Trim();
 
-        if (digits.Length == 1)
-        {
-            Console.WriteLine("Попередження: введено лише одну цифру — змінювати порядок цифр немає сенсу.");
-            Console.WriteLine($"Результат: {FormatSignedNumber(sign, digits)}");
-            return;
-        }
+            char sign;
+            string digits;
 
-        char[] reversedCharacters = digits.ToCharArray();
-        Array.Reverse(reversedCharacters);
+            if (!TrySplitInteger(input, out sign, out digits)) {
+                Console.WriteLine("Помилка: потрібно ввести ціле число.");
+                return;
+            }
 
-        string reversedDigits = new string(reversedCharacters).TrimStart('0');
-        if (reversedDigits.Length == 0)
-            reversedDigits = "0";
+            // Прибираємо початкові нулі, тому що працюємо саме з числом.
+            int firstDigit = 0;
 
-        Console.WriteLine($"Результат: {FormatSignedNumber(sign, reversedDigits)}");
-        return;
-    }
-}
+            while (firstDigit < digits.Length - 1 && digits[firstDigit] == '0') {
+                firstDigit++;
+            }
 
-static bool TryReadIntegerText(string input, out char sign, out string digits)
-{
-    sign = '\0';
-    digits = "";
+            digits = digits.Substring(firstDigit);
 
-    if (input.Length == 0)
-        return false;
+            if (digits.Length == 1) {
+                Console.WriteLine("Попередження: введено лише одну цифру.");
+                Console.WriteLine("Змінювати порядок цифр немає сенсу — значення не зміниться.");
 
-    int start = 0;
+                if (digits == "0") {
+                    Console.WriteLine("Результат: 0");
+                } else if (sign == '-' || sign == '+') {
+                    Console.WriteLine("Результат: " + sign + digits);
+                } else {
+                    Console.WriteLine("Результат: " + digits);
+                }
 
-    if (input[0] == '-' || input[0] == '+')
-    {
-        sign = input[0];
-        start = 1;
+                return;
+            }
 
-        if (input.Length == 1)
-            return false;
-    }
+            // Створюємо масив символів і записуємо цифри у зворотному порядку.
+            char[] reversedCharacters = new char[digits.Length];
 
-    for (int i = start; i < input.Length; i++)
-    {
-        if (input[i] < '0' || input[i] > '9')
-            return false;
-    }
+            for (int i = 0; i < digits.Length; i++) {
+                reversedCharacters[i] = digits[digits.Length - 1 - i];
+            }
 
-    digits = input.Substring(start).TrimStart('0');
+            string reversed = new string(reversedCharacters);
 
-    if (digits.Length == 0)
-    {
-        digits = "0";
-        sign = '\0';
-    }
+            // 1000 -> 0001 -> 1
+            int firstNonZero = 0;
 
-    return true;
-}
+            while (firstNonZero < reversed.Length - 1 && reversed[firstNonZero] == '0') {
+                firstNonZero++;
+            }
 
-static string FormatSignedNumber(char sign, string digits)
-{
-    if (digits == "0" || sign == '\0')
-        return digits;
+            reversed = reversed.Substring(firstNonZero);
 
-    return sign + digits;
-}
-
-static void RemoveWords()
-{
-    string text = ReadText("Введіть текст: ");
-    string trimmedText = text.Trim();
-
-    if (TryGetIntegerParts(trimmedText, out char numberSign, out string numberDigits))
-    {
-        Console.WriteLine(
-            $"Попередження: \"{trimmedText}\" — це не слова, а числове значення.");
-        Console.WriteLine(
-            "Для числового значення програма видаляє перші X цифр.");
-
-        int digitCount;
-        while (!int.TryParse(
-                   ReadText("Скільки перших цифр видалити? "),
-                   out digitCount) ||
-               digitCount < 0)
-        {
-            Console.WriteLine("Введіть невід'ємне ціле число.");
+            if (reversed == "0") {
+                Console.WriteLine("Результат: 0");
+            } else if (sign == '-' || sign == '+') {
+                Console.WriteLine("Результат: " + sign + reversed);
+            } else {
+                Console.WriteLine("Результат: " + reversed);
+            }
         }
 
-        string resultDigits =
-            digitCount >= numberDigits.Length
-                ? ""
-                : numberDigits.Substring(digitCount);
+        #endregion
 
-        string result =
-            resultDigits.Length == 0
-                ? ""
-                : numberSign == '\0'
-                    ? resultDigits
-                    : numberSign + resultDigits;
 
-        Console.WriteLine($"Результат: {result}");
-        return;
-    }
+        #region TASK 2
 
-    AnalyzeTextElements(text);
+        static void RemoveWordsOrDigits() {
+            Console.Write("Введіть текст: ");
+            string text = Console.ReadLine() ?? "";
+            string trimmedText = text.Trim();
 
-    int count;
-    while (!int.TryParse(
-               ReadText("Скільки перших слів/числових значень видалити? "),
-               out count) ||
-           count < 0)
-    {
-        Console.WriteLine("Введіть невід'ємне ціле число.");
-    }
+            char sign;
+            string numberDigits;
 
-    int index = 0;
+            // Якщо користувач ввів тільки число, працюємо з його цифрами.
+            if (TrySplitInteger(trimmedText, out sign, out numberDigits)) {
+                Console.WriteLine(
+                    "Попередження: \"" + trimmedText +
+                    "\" — це не слова, а числове значення.");
+                Console.WriteLine("Для числового значення будуть видалятися перші X цифр.");
 
-    for (int removed = 0; removed < count && index < text.Length; removed++)
-    {
-        while (index < text.Length && char.IsWhiteSpace(text[index]))
-            index++;
+                int digitCount = ReadNonNegativeInteger("Скільки перших цифр видалити? ");
 
-        while (index < text.Length && !char.IsWhiteSpace(text[index]))
-            index++;
-    }
+                if (digitCount >= numberDigits.Length) {
+                    Console.WriteLine("Результат: ");
+                    return;
+                }
 
-    if (count > 0)
-    {
-        while (index < text.Length && char.IsWhiteSpace(text[index]))
-            index++;
-    }
+                string resultDigits = numberDigits.Substring(digitCount);
 
-    Console.WriteLine($"Результат: {text.Substring(index)}");
-}
+                if (sign == '-' || sign == '+') {
+                    Console.WriteLine("Результат: " + sign + resultDigits);
+                } else {
+                    Console.WriteLine("Результат: " + resultDigits);
+                }
 
-static bool TryGetIntegerParts(string input, out char sign, out string digits)
-{
-    sign = '\0';
-    digits = "";
+                return;
+            }
 
-    if (input.Length == 0)
-        return false;
+            // Для звичайного тексту числа теж вважаються окремими елементами,
+            // але програма повідомляє, що це числові значення, а не слова.
+            AnalyzeTextElements(text);
 
-    int start = 0;
+            int count = ReadNonNegativeInteger(
+                "Скільки перших слів/числових значень видалити? ");
 
-    if (input[0] == '-' || input[0] == '+')
-    {
-        sign = input[0];
-        start = 1;
+            int index = 0;
 
-        if (input.Length == 1)
-            return false;
-    }
+            for (int removed = 0; removed < count && index < text.Length; removed++) {
+                while (index < text.Length && char.IsWhiteSpace(text[index])) {
+                    index++;
+                }
 
-    for (int i = start; i < input.Length; i++)
-    {
-        if (input[i] < '0' || input[i] > '9')
-            return false;
-    }
+                while (index < text.Length && !char.IsWhiteSpace(text[index])) {
+                    index++;
+                }
+            }
 
-    digits = input.Substring(start);
-    return true;
-}
+            if (count > 0) {
+                while (index < text.Length && char.IsWhiteSpace(text[index])) {
+                    index++;
+                }
+            }
 
-static void AnalyzeTextElements(string text)
-{
-    int wordCount = 0;
-    int numericCount = 0;
-    int index = 0;
+            Console.WriteLine("Результат: " + text.Substring(index));
+        }
 
-    while (index < text.Length)
-    {
-        while (index < text.Length && char.IsWhiteSpace(text[index]))
-            index++;
 
-        if (index >= text.Length)
-            break;
+        static void AnalyzeTextElements(string text) {
+            int wordCount = 0;
+            int numberCount = 0;
+            int index = 0;
 
-        int start = index;
+            while (index < text.Length) {
+                while (index < text.Length && char.IsWhiteSpace(text[index])) {
+                    index++;
+                }
 
-        while (index < text.Length && !char.IsWhiteSpace(text[index]))
-            index++;
+                if (index >= text.Length) {
+                    break;
+                }
 
-        string token = text.Substring(start, index - start);
+                int start = index;
 
-        if (IsNumericToken(token))
-        {
-            numericCount++;
+                while (index < text.Length && !char.IsWhiteSpace(text[index])) {
+                    index++;
+                }
+
+                string element = text.Substring(start, index - start);
+                string elementWithoutPunctuation = element.Trim(
+                    '(', ')', '[', ']', '{', '}', '"', '\'', ';', '!', '?', ':', '.', ',');
+
+                char sign;
+                string digits;
+
+                if (TrySplitInteger(elementWithoutPunctuation, out sign, out digits)) {
+                    numberCount++;
+
+                    Console.WriteLine(
+                        "Попередження: \"" + element +
+                        "\" — це не слово, а числове значення.");
+                } else {
+                    wordCount++;
+                }
+            }
+
             Console.WriteLine(
-                $"Попередження: \"{token}\" — це не слово, а числове значення. " +
-                "Воно буде враховано як окремий елемент.");
-        }
-        else
-        {
-            wordCount++;
-        }
-    }
-
-    Console.WriteLine(
-        $"Розпізнано: слів — {wordCount}, числових значень — {numericCount}.");
-}
-
-static bool IsNumericToken(string token)
-{
-    string value = token.Trim(
-        '(', ')', '[', ']', '{', '}', '"', '\'', ';', '!', '?', ':', '.', ',');
-
-    if (value.Length == 0)
-        return false;
-
-    int start = 0;
-
-    if (value[0] == '+' || value[0] == '-')
-    {
-        start = 1;
-
-        if (value.Length == 1)
-            return false;
-    }
-
-    bool hasDigit = false;
-    bool hasSeparator = false;
-
-    for (int i = start; i < value.Length; i++)
-    {
-        if (value[i] >= '0' && value[i] <= '9')
-        {
-            hasDigit = true;
-            continue;
+                "Розпізнано: слів — " + wordCount +
+                ", числових значень — " + numberCount + ".");
         }
 
-        if ((value[i] == '.' || value[i] == ',') && !hasSeparator)
-        {
-            hasSeparator = true;
-            continue;
+        #endregion
+
+
+        #region TASK 3
+
+        static void CalculateArea() {
+            Console.WriteLine("1 — Квадрат");
+            Console.WriteLine("2 — Круг");
+            Console.WriteLine("3 — Прямокутник");
+            Console.WriteLine("4 — Трикутник");
+            Console.Write("Оберіть фігуру: ");
+
+            string figure = Console.ReadLine() ?? "";
+
+            switch (figure) {
+                case "1": {
+                        double side = ReadPositiveDouble("Введіть сторону квадрата: ");
+                        double area = side * side;
+
+                        Console.WriteLine("Площа квадрата: " + area);
+                        break;
+                    }
+
+                case "2": {
+                        double radius = ReadPositiveDouble("Введіть радіус круга: ");
+                        double area = Math.PI * radius * radius;
+
+                        Console.WriteLine("Площа круга: " + area);
+                        break;
+                    }
+
+                case "3": {
+                        double sideA = ReadPositiveDouble("Введіть першу сторону: ");
+                        double sideB = ReadPositiveDouble("Введіть другу сторону: ");
+                        double area = sideA * sideB;
+
+                        Console.WriteLine("Площа прямокутника: " + area);
+                        break;
+                    }
+
+                case "4": {
+                        double triangleBase = ReadPositiveDouble("Введіть основу трикутника: ");
+                        double height = ReadPositiveDouble("Введіть висоту трикутника: ");
+                        double area = triangleBase * height / 2;
+
+                        Console.WriteLine("Площа трикутника: " + area);
+                        break;
+                    }
+
+                default: {
+                        Console.WriteLine("Помилка: оберіть число від 1 до 4.");
+                        break;
+                    }
+            }
         }
 
-        return false;
-    }
 
-    return hasDigit;
-}
+        static double ReadPositiveDouble(string message) {
+            while (true) {
+                Console.Write(message);
+                string input = (Console.ReadLine() ?? "").Trim();
 
-static decimal ReadPositiveNumber(string prompt)
-{
-    while (true)
-    {
-        string input = ReadText(prompt).Trim().Replace(',', '.');
+                double value;
 
-        if (decimal.TryParse(
-                input,
-                NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint,
-                CultureInfo.InvariantCulture,
-                out decimal value) &&
-            value > 0)
-        {
-            return value;
+                if (TryParsePositiveDouble(input, out value)) {
+                    return value;
+                }
+
+                Console.WriteLine(
+                    "Помилка: введіть додатне число. " +
+                    "Можна використовувати крапку або кому.");
+            }
         }
 
-        Console.WriteLine("Введіть додатне число. Десятковий роздільник — крапка або кома.");
+
+        // Просте перетворення десяткового числа без сторонніх бібліотек.
+        // Підтримуються і 2.5, і 2,5.
+        static bool TryParsePositiveDouble(string text, out double value) {
+            value = 0;
+
+            if (text.Length == 0) {
+                return false;
+            }
+
+            bool separatorFound = false;
+            bool digitFound = false;
+            double divider = 10;
+
+            for (int i = 0; i < text.Length; i++) {
+                char current = text[i];
+
+                if (current >= '0' && current <= '9') {
+                    int digit = current - '0';
+                    digitFound = true;
+
+                    if (!separatorFound) {
+                        value = value * 10 + digit;
+                    } else {
+                        value = value + digit / divider;
+                        divider = divider * 10;
+                    }
+                } else if ((current == '.' || current == ',') && !separatorFound) {
+                    separatorFound = true;
+                } else {
+                    return false;
+                }
+            }
+
+            if (!digitFound || value <= 0 || double.IsInfinity(value)) {
+                return false;
+            }
+
+            return true;
+        }
+
+        #endregion
+
+
+        #region TASK 4
+
+        static void ReplaceCharacters() {
+            Console.Write("Введіть текст: ");
+            string text = Console.ReadLine() ?? "";
+
+            char[] characters = text.ToCharArray();
+
+            for (int i = 0; i < characters.Length; i++) {
+                int position = i + 1;
+
+                // Кожен 15-й символ одночасно кратний 3 і 5,
+                // тому перевіряємо 15 першим.
+                if (position % 15 == 0) {
+                    characters[i] = '?';
+                } else if (position % 3 == 0) {
+                    characters[i] = 'X';
+                } else if (position % 5 == 0) {
+                    characters[i] = '9';
+                }
+            }
+
+            Console.WriteLine("Результат: " + new string(characters));
+        }
+
+        #endregion
+
+
+        #region HELPERS
+
+        // Перевіряє ціле число будь-якої довжини.
+        // Саме тому завдання 1 не обмежується типами int або long.
+        static bool TrySplitInteger(string text, out char sign, out string digits) {
+            sign = '\0';
+            digits = "";
+
+            if (text.Length == 0) {
+                return false;
+            }
+
+            int start = 0;
+
+            if (text[0] == '-' || text[0] == '+') {
+                sign = text[0];
+                start = 1;
+
+                if (text.Length == 1) {
+                    return false;
+                }
+            }
+
+            for (int i = start; i < text.Length; i++) {
+                if (text[i] < '0' || text[i] > '9') {
+                    return false;
+                }
+            }
+
+            digits = text.Substring(start);
+            return true;
+        }
+
+
+        static int ReadNonNegativeInteger(string message) {
+            while (true) {
+                Console.Write(message);
+                string input = (Console.ReadLine() ?? "").Trim();
+
+                int value;
+
+                if (int.TryParse(input, out value) && value >= 0) {
+                    return value;
+                }
+
+                Console.WriteLine("Помилка: введіть невід'ємне ціле число.");
+            }
+        }
+
+        #endregion
     }
-}
-
-static void CalculateArea()
-{
-    Console.WriteLine("1 — Квадрат");
-    Console.WriteLine("2 — Круг");
-    Console.WriteLine("3 — Прямокутник");
-    Console.WriteLine("4 — Трикутник");
-
-    string figure = ReadText("Оберіть фігуру: ");
-    decimal area;
-
-    switch (figure)
-    {
-        case "1":
-            decimal side = ReadPositiveNumber("Введіть сторону квадрата: ");
-            area = side * side;
-            break;
-
-        case "2":
-            decimal radius = ReadPositiveNumber("Введіть радіус круга: ");
-            area = (decimal)Math.PI * radius * radius;
-            break;
-
-        case "3":
-            decimal width = ReadPositiveNumber("Введіть першу сторону: ");
-            decimal length = ReadPositiveNumber("Введіть другу сторону: ");
-            area = width * length;
-            break;
-
-        case "4":
-            decimal basis = ReadPositiveNumber("Введіть основу трикутника: ");
-            decimal height = ReadPositiveNumber("Введіть висоту трикутника: ");
-            area = basis * height / 2;
-            break;
-
-        default:
-            Console.WriteLine("Невідома фігура. Оберіть число від 1 до 4.");
-            return;
-    }
-
-    Console.WriteLine(
-        $"Площа: {area.ToString("0.############################", CultureInfo.InvariantCulture)}");
-}
-
-static void ReplaceCharacters()
-{
-    char[] characters = ReadText("Введіть текст: ").ToCharArray();
-
-    for (int i = 0; i < characters.Length; i++)
-    {
-        int position = i + 1;
-
-        if (position % 15 == 0)
-            characters[i] = '?';
-        else if (position % 3 == 0)
-            characters[i] = 'X';
-        else if (position % 5 == 0)
-            characters[i] = '9';
-    }
-
-    Console.WriteLine($"Результат: {new string(characters)}");
 }
