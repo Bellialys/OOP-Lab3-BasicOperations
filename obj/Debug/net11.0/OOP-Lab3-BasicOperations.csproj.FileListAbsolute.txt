@@ -14,3 +14,4 @@ C:\Users\ae995\Desktop\Кодинг\Репозиторий\OOP-Lab3-BasicOperati
 C:\Users\ae995\Desktop\Кодинг\Репозиторий\OOP-Lab3-BasicOperations\obj\Debug\net11.0\OOP-Lab3-BasicOperations.genruntimeconfig.cache
 C:\Users\ae995\Desktop\Кодинг\Репозиторий\OOP-Lab3-BasicOperations\obj\Debug\net11.0\ref\OOP-Lab3-BasicOperations.dll
 C:\Users\ae995\Desktop\Кодинг\Репозиторий\OOP-Lab3-BasicOperations\obj\Debug\net11.0\OOP-Lab3.5EBA0E94.Up2Date
+C:\Users\ae995\Desktop\Кодинг\Репозиторий\OOP-Lab3-BasicOperations\obj\Debug\net11.0\OOP-Lab3-BasicOperations.sourcelink.json
