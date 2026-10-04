@@ -141,9 +141,16 @@ static void RemoveWords()
 {
     string text = ReadText("Введіть текст: ");
 
+    AnalyzeTextElements(text);
+
     int count;
-    while (!int.TryParse(ReadText("Скільки перших слів видалити? "), out count) || count < 0)
+    while (!int.TryParse(
+               ReadText("Скільки перших слів/числових значень видалити? "),
+               out count) ||
+           count < 0)
+    {
         Console.WriteLine("Введіть невід'ємне ціле число.");
+    }
 
     int index = 0;
 
@@ -163,6 +170,85 @@ static void RemoveWords()
     }
 
     Console.WriteLine($"Результат: {text.Substring(index)}");
+}
+
+static void AnalyzeTextElements(string text)
+{
+    int wordCount = 0;
+    int numericCount = 0;
+    int index = 0;
+
+    while (index < text.Length)
+    {
+        while (index < text.Length && char.IsWhiteSpace(text[index]))
+            index++;
+
+        if (index >= text.Length)
+            break;
+
+        int start = index;
+
+        while (index < text.Length && !char.IsWhiteSpace(text[index]))
+            index++;
+
+        string token = text.Substring(start, index - start);
+
+        if (IsNumericToken(token))
+        {
+            numericCount++;
+            Console.WriteLine(
+                $"Попередження: \"{token}\" — це не слово, а числове значення. " +
+                "Воно буде враховано як окремий елемент.");
+        }
+        else
+        {
+            wordCount++;
+        }
+    }
+
+    Console.WriteLine(
+        $"Розпізнано: слів — {wordCount}, числових значень — {numericCount}.");
+}
+
+static bool IsNumericToken(string token)
+{
+    string value = token.Trim(
+        '(', ')', '[', ']', '{', '}', '"', '\'', ';', '!', '?', ':', '.', ',');
+
+    if (value.Length == 0)
+        return false;
+
+    int start = 0;
+
+    if (value[0] == '+' || value[0] == '-')
+    {
+        start = 1;
+
+        if (value.Length == 1)
+            return false;
+    }
+
+    bool hasDigit = false;
+    bool hasSeparator = false;
+
+    for (int i = start; i < value.Length; i++)
+    {
+        if (value[i] >= '0' && value[i] <= '9')
+        {
+            hasDigit = true;
+            continue;
+        }
+
+        if ((value[i] == '.' || value[i] == ',') && !hasSeparator)
+        {
+            hasSeparator = true;
+            continue;
+        }
+
+        return false;
+    }
+
+    return hasDigit;
 }
 
 static decimal ReadPositiveNumber(string prompt)
