@@ -247,7 +247,7 @@ namespace Basics {
                         double side = ReadPositiveDouble("Введіть сторону квадрата: ");
                         double area = side * side;
 
-                        Console.WriteLine("Площа квадрата: " + area);
+                        Console.WriteLine("Площа квадрата: " + Math.Round(area, 10));
                         break;
                     }
 
@@ -255,7 +255,7 @@ namespace Basics {
                         double radius = ReadPositiveDouble("Введіть радіус круга: ");
                         double area = Math.PI * radius * radius;
 
-                        Console.WriteLine("Площа круга: " + area);
+                        Console.WriteLine("Площа круга: " + Math.Round(area, 10));
                         break;
                     }
 
@@ -264,7 +264,7 @@ namespace Basics {
                         double sideB = ReadPositiveDouble("Введіть другу сторону: ");
                         double area = sideA * sideB;
 
-                        Console.WriteLine("Площа прямокутника: " + area);
+                        Console.WriteLine("Площа прямокутника: " + Math.Round(area, 10));
                         break;
                     }
 
@@ -273,7 +273,7 @@ namespace Basics {
                         double height = ReadPositiveDouble("Введіть висоту трикутника: ");
                         double area = triangleBase * height / 2;
 
-                        Console.WriteLine("Площа трикутника: " + area);
+                        Console.WriteLine("Площа трикутника: " + Math.Round(area, 10));
                         break;
                     }
 
