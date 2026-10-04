@@ -140,6 +140,39 @@ static string FormatSignedNumber(char sign, string digits)
 static void RemoveWords()
 {
     string text = ReadText("Введіть текст: ");
+    string trimmedText = text.Trim();
+
+    if (TryGetIntegerParts(trimmedText, out char numberSign, out string numberDigits))
+    {
+        Console.WriteLine(
+            $"Попередження: \"{trimmedText}\" — це не слова, а числове значення.");
+        Console.WriteLine(
+            "Для числового значення програма видаляє перші X цифр.");
+
+        int digitCount;
+        while (!int.TryParse(
+                   ReadText("Скільки перших цифр видалити? "),
+                   out digitCount) ||
+               digitCount < 0)
+        {
+            Console.WriteLine("Введіть невід'ємне ціле число.");
+        }
+
+        string resultDigits =
+            digitCount >= numberDigits.Length
+                ? ""
+                : numberDigits.Substring(digitCount);
+
+        string result =
+            resultDigits.Length == 0
+                ? ""
+                : numberSign == '\0'
+                    ? resultDigits
+                    : numberSign + resultDigits;
+
+        Console.WriteLine($"Результат: {result}");
+        return;
+    }
 
     AnalyzeTextElements(text);
 
@@ -170,6 +203,35 @@ static void RemoveWords()
     }
 
     Console.WriteLine($"Результат: {text.Substring(index)}");
+}
+
+static bool TryGetIntegerParts(string input, out char sign, out string digits)
+{
+    sign = '\0';
+    digits = "";
+
+    if (input.Length == 0)
+        return false;
+
+    int start = 0;
+
+    if (input[0] == '-' || input[0] == '+')
+    {
+        sign = input[0];
+        start = 1;
+
+        if (input.Length == 1)
+            return false;
+    }
+
+    for (int i = start; i < input.Length; i++)
+    {
+        if (input[i] < '0' || input[i] > '9')
+            return false;
+    }
+
+    digits = input.Substring(start);
+    return true;
 }
 
 static void AnalyzeTextElements(string text)
